@@ -24,34 +24,30 @@ public class MyMonitor
 			try
 			{
 				wait();
-				System.out.println("Queue is full, " + Thread.currentThread().getName() + " must wait.");
 			} catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
 		}
 		queue.add(toAdd);
-		System.out.println("Job added, sending notify");
 		notifyAll();
 	}
 	
 	
 	public synchronized Job getJob()
 	{
-		while(isEmpty())
+		
+		while(isEmpty() && this.cont)
 		{
 			try
 			{
-
-				System.out.println("Jobs is empty, " + Thread.currentThread().getName() + " must wait");
-				System.out.println(queue.peek());
 				wait();
 			} catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
 		}
-		Job toReturn = queue.remove();
+		Job toReturn = queue.poll();
 		notifyAll();
 		return toReturn;
 	}
@@ -78,10 +74,12 @@ public class MyMonitor
 	public synchronized void turnOff()
 	{
 		cont = false;
+		notifyAll();
 	}
 	
 	public synchronized int numJobs()
 	{
 		return this.queue.size();
 	}
+
 }

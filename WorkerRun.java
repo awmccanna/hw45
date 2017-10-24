@@ -3,7 +3,7 @@ public class WorkerRun implements Runnable
 {
 	Job job;
 	String order;
-	int first, second;
+	double first, second;
 	MyMonitor jobs;
 	ThreadPool pool;
 	
@@ -16,79 +16,96 @@ public class WorkerRun implements Runnable
 	@Override
 	public void run()
 	{
+		try
+		{
+			Thread.sleep(100);
+		} catch (InterruptedException e1)
+		{
+			e1.printStackTrace();
+		}
 		Thread currentThread = Thread.currentThread();
-		int index = this.pool.getIndex(currentThread);
-		
+		int index = this.pool.getIndex(currentThread);	
 		
 		
 		while(jobs.keepGoing() && currentThread == this.pool.getThreadAt(index))
 		{
-
-			System.out.println("Worker " + currentThread.getName() + " with index of " + index + " is running, inside of while loop");
-			int result;
+			
+			
+			double result;
 			job = jobs.getJob();//Thread will wait here if the queue is empty, MyMonitor tells thread to wait
-			order = job.getOrder();
-
-			System.out.println("Worker " + currentThread.getName() + " with index of " + index + " is running, inside of while loop. My order is: " + order);
-			if(!order.equalsIgnoreCase("KILL"))//Will execute if there isn't a kill command
+			
+			if(job != null)
 			{
-				this.first = job.getFirst();
-				this.second = job.getSecond();
-				
-				try
+				order = job.getOrder();
+				if(!order.equalsIgnoreCase("KILL"))//Will execute if there isn't a kill command
 				{
-					Thread.sleep(1000);
-				} catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-				
-				if(order.equalsIgnoreCase("ADD"))//Addition
-				{
-					result = this.first + this.second;
-					System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " + " + this.second + " = " + result);
-				}
-				else if(order.equalsIgnoreCase("SUB"))//Subtraction
-				{
-					result = this.first - this.second;
-					System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " - " + this.second + " = " + result);
-				}
-				else if(order.equalsIgnoreCase("MUL"))//Multiplication
-				{
-					result = this.first * this.second;
-					System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " * " + this.second + " = " + result);
-				}
-				else if(order.equalsIgnoreCase("DIV"))//Division
-				{
-					if(this.second == 0)
+					this.first = job.getFirst();
+					this.second = job.getSecond();
+					
+					try
 					{
-						System.out.println(Thread.currentThread().getName() + " cannot divide by zero. " + job.getFullOrder() + " was not processed.");
-					}
-					else
+						Thread.sleep(50);
+					} catch (InterruptedException e)
 					{
-						result = this.first / this.second;
-						System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " / " + this.second + " = " + result);
+						e.printStackTrace();
 					}
+					
+					if(order.equalsIgnoreCase("ADD"))//Addition
+					{
+						result = this.first + this.second;
+						System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " + " + this.second + " = " + result);
+					}
+					else if(order.equalsIgnoreCase("SUB"))//Subtraction
+					{
+						result = this.first - this.second;
+						System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " - " + this.second + " = " + result);
+					}
+					else if(order.equalsIgnoreCase("MUL"))//Multiplication
+					{
+						result = this.first * this.second;
+						System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " * " + this.second + " = " + result);
+					}
+					else if(order.equalsIgnoreCase("DIV"))//Division
+					{
+						if(this.second == 0)
+						{
+							System.out.println(Thread.currentThread().getName() + " cannot divide by zero. " + job.getFullOrder() + " was not processed.");
+						}
+						else
+						{
+							result = this.first / this.second;
+							System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ". The result is " + this.first + " / " + this.second + " = " + result);
+						}
+					}
+					else//Invalid input
+					{
+						System.out.println(Thread.currentThread().getName() + " recieved invalid command. " + job.getFullOrder() + " was not processed.");
+					}
+					
+					try
+					{
+						Thread.sleep(1000);
+					} catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					
 				}
-				else//Invalid input
+				else//Kill command recieved, telling monitor and pool to stop all the threads
 				{
-					System.out.println(Thread.currentThread().getName() + " recieved invalid command. " + job.getFullOrder() + " was not processed.");
-				}
-				
-				
-				try
-				{
-					Thread.sleep(1000);
-				} catch (InterruptedException e)
-				{
-					e.printStackTrace();
+					try
+					{
+						Thread.sleep(50);
+					} catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					pool.stopPool();
+					System.out.println(Thread.currentThread().getName() + " has processed " + job.getFullOrder() + ".");
+					jobs.turnOff();
 				}
 			}
-			else//Kill command recieved, telling monitor to stop all the threads
-			{			
-				pool.stopPool();
-				jobs.turnOff();
-			}
+			
 			
 			
 			

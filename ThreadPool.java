@@ -6,7 +6,6 @@ public class ThreadPool
 	WorkerThread holder[];
 	boolean stopped;
 	static MyMonitor jobQueue;
-	Thread monitor;
 	
 	private class WorkerThread extends Thread
 	{
@@ -24,7 +23,6 @@ public class ThreadPool
 		this.holder = new WorkerThread[40];
 		this.stopped = false;
 		jobQueue = new MyMonitor(50);
-		monitor = new Thread(new MonitorRun(jobQueue, this), "Monitor thread");
 		
 		
 		for(int i = 0; i < 5; i++)
@@ -41,7 +39,6 @@ public class ThreadPool
 		this.holder = new WorkerThread[40];
 		this.stopped = false;
 		jobQueue = p;
-		monitor = new Thread(new MonitorRun(jobQueue, this), "Monitor thread");
 		
 		
 		for(int i = 0; i < 5; i++)
@@ -60,32 +57,37 @@ public class ThreadPool
 		{
 			holder[i].start();
 		}
-		monitor.start();
+		
 	}
 	
 	public void increaseThreadsInPool()
 	{
-		if(this.actualNumberThreads != 20)
+		if(this.actualNumberThreads != 40)
 		{
+			System.out.println("Doubling number of threads");
 			for(int i = this.actualNumberThreads; i < this.actualNumberThreads*2; i++)
 			{
 				holder[i] = new WorkerThread(new WorkerRun(jobQueue, this), "Thread " + i);
 				holder[i].start();
 			}
 			
-			this.actualNumberThreads *= 2;
+
+			
+			this.actualNumberThreads *= 2;//Doubling number of actual threads
 		}
 	}
 	
 	public void decreaseThreadsInPool()
 	{
+		
 		if(this.actualNumberThreads != 5)
 		{
-			for(int i = this.actualNumberThreads; i > this.actualNumberThreads/2; i--)
+			System.out.println("Halving number of threads");
+			for(int i = this.actualNumberThreads-1; i >= this.actualNumberThreads/2; i--)
 			{
 				holder[i] = null;//Will cause one of the conditions on the threads while loop to fail, so the thread will exit
 			}
-			this.actualNumberThreads /=2;
+			this.actualNumberThreads /= 2;//halving number of actual threads
 		}
 	}
 	
